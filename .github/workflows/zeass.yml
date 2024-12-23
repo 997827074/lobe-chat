@@ -9,15 +9,37 @@ on:
   schedule:
     - cron: '0 */6 * * *' # every 6 hours
   workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+      tags:
+        description: 'Test scenario tags'
+        required: false
+        type: string
+    # 分支过滤
+    branches:
+      - zea
 
 jobs:
   sync_latest_from_upstream:
     name: Sync latest commits from upstream repo
     runs-on: ubuntu-latest
-    if: ${{ github.event.repository.fork }}
+    # 移除原有条件
+    # if: ${{ github.event.repository.fork }}
+    # 添加新条件，以便让任务只在 zea 分支上运行
+    if: ${{ github.event.repository.fork && github.ref == 'refs/heads/zea' }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: zea
 
       - name: Clean issue notice
         uses: actions-cool/issues-helper@v3
